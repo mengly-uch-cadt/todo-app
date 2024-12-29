@@ -18,21 +18,23 @@ jobs:
         # Create the .ssh directory if it doesn't exist
         mkdir -p ~/.ssh
 
-        # Save the SSH private key from GitHub secrets
+        # Save the SSH private key from GitHub secrets and ensure it's in the correct format
         echo "${{ secrets.DEPLOY_KEY }}" > ~/.ssh/id_rsa
 
         # Set correct permissions for the private key
         chmod 600 ~/.ssh/id_rsa
 
-        # Add the server's SSH key to known hosts (to avoid SSH prompts)
+        # Add the server's SSH key to known hosts to avoid prompts
         ssh-keyscan -H 157.245.60.124 >> ~/.ssh/known_hosts
         chmod 644 ~/.ssh/known_hosts
 
         # Start the SSH agent and add the private key
         eval $(ssh-agent -s)
+
+        # Manually add the SSH key to the agent
         ssh-add ~/.ssh/id_rsa
 
-        # Verify that the key has been added to the SSH agent
+        # Verify that the key has been added successfully to the SSH agent
         ssh-add -l
 
     - name: Test SSH Connection
