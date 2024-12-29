@@ -1,27 +1,27 @@
-name: Node.js CI/CD
+name: Node.js CI/CD with Dokku
 
 on:
   push:
     branches:
-      - main  # Trigger on push to the main branch
+      - main  # Trigger the pipeline when pushing to the main branch
   pull_request:
     branches:
-      - main  # Trigger on PRs to the main branch
+      - main  # Trigger on pull requests targeting the main branch
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      # Check out the repository
-      - name: Check out code
+      # Checkout code
+      - name: Checkout code
         uses: actions/checkout@v2
 
       # Set up Node.js
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '16'  # Specify the Node.js version to use
+          node-version: '16'  # Specify the Node.js version you want to use
 
       # Install dependencies
       - name: Install dependencies
@@ -33,22 +33,25 @@ jobs:
 
   deploy:
     runs-on: ubuntu-latest
-    needs: build  # Only runs after the build job succeeds
-    if: github.ref == 'refs/heads/main'  # Deploy only on the main branch
+    needs: build  # Runs after the build job succeeds
+    if: github.ref == 'refs/heads/main'  # Only deploy if the push is to the main branch
 
     steps:
-      - name: Check out code
+      - name: Checkout code
         uses: actions/checkout@v2
 
-      # Set up SSH key for secure deployment
-      - name: Set up SSH key
+      # Set up SSH for deployment to Dokku server
+      - name: Set up SSH key for Dokku
         run: |
           echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.DOKKU_SERVER_IP }} >> ~/.ssh/known_hosts
 
-      # Deploy to DigitalOcean using Dokku
-      - name: Deploy to DigitalOcean using Dokku
+      # Deploy to Dokku on DigitalOcean
+      - name: Deploy to Dokku
         run: |
-          git remote add dokku dokku@${{ secrets.DOKKU_SERVER_IP }}:your-app-name
+          # Add Dokku remote
+          git remote add dokku dokku@${{ secrets.DOKKU_SERVER_IP }}:${{ secrets.DOKKU_APP_NAME }}
+
+          # Push the code to Dokku for deployment
           git push dokku main
