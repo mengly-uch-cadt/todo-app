@@ -1,0 +1,24 @@
+name: Deploy Todo List App
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up SSH agent
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.DOKKU_SSH_KEY }}
+
+      - name: Deploy to Dokku
+        run: |
+          git remote add dokku dokku@<DROPLET_IP>:todo-list-app
+          git push dokku main -f
