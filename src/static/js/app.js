@@ -102,8 +102,8 @@ function AddItemForm({ onNewItem }) {
                 <InputGroup.Append>
                     <Button
                         type="submit"
-                        // variant="success"
-                        color="blue"
+                        variant="success"
+                        // color=""
                         disabled={!newItem.length}
                         className={submitting ? 'disabled' : ''}
                     >
