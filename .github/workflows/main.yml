@@ -1,4 +1,4 @@
-name: CI/CD Pipeline for Todo List App
+name: Deploy to Dokku
 
 on:
   push:
@@ -6,44 +6,24 @@ on:
       - main
 
 jobs:
-  build:
-    runs-on: ubuntu-20.04
+  deploy:
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
-        with:
-          token: ${{ secrets.GH_TOKEN }}  # Use your GitHub Personal Access Token
+        uses: actions/checkout@v3
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
-
-      - name: Build Docker image
+      - name: Set up SSH
         run: |
-          docker build -t todo-list-app .
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DOKKU_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.DOKKU_HOST }} >> ~/.ssh/known_hosts
 
-      - name: Log in to Dokku
+      - name: Add Dokku remote
         run: |
-          echo "${{ secrets.DOKKU_PRIVATE_KEY }}" > dokku_key
-          chmod 600 dokku_key
-          ssh -o StrictHostKeyChecking=no -i dokku_key dokku@157.245.60.124 "dokku apps:create todo-list-app || echo 'App already exists.'"
+          git remote add dokku dokku@${{ secrets.DOKKU_HOST }}:${{ secrets.DOKKU_APP }}
 
-      - name: Push Docker image to Dokku
+      - name: Push to Dokku
         run: |
-          docker tag todo-list-app dokku@157.245.60.124:todo-list-app
-          docker push dokku@157.245.60.124:todo-list-app
-
-  deploy:
-    runs-on: ubuntu-20.04
-    needs: build
-
-    steps:
-      - name: Deploy to Dokku
-        run: |
-          echo "${{ secrets.DOKKU_PRIVATE_KEY }}" > dokku_key
-          chmod 600 dokku_key
-          ssh -o StrictHostKeyChecking=no -i dokku_key dokku@157.245.60.124 ps:restart todo-list-app
-
-      - name: Notify deployment
-        run: |
-          echo "Deployment to Dokku completed successfully!"
+          git push dokku main -f
