@@ -1,4 +1,4 @@
-name: Deploy to DigitalOcean
+name: Deploy to Dokku
 
 on:
   push:
@@ -13,19 +13,10 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    - name: Set up SSH
-      run: |
-        mkdir -p ~/.ssh
-        echo "${{ secrets.DEPLOY_KEY }}" > ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa
-        ssh-keyscan -H 159.223.72.233 > ~/.ssh/known_hosts
-        chmod 644 ~/.ssh/known_hosts
-
-    - name: Debug SSH Connection
-      run: |
-        ssh -vvv dokku@159.223.72.233 exit
-
     - name: Deploy to Dokku
       run: |
-        git remote add dokku dokku@159.223.72.233:todo-list-app
+        ssh-keyscan -H <YOUR_DROPLET_IP> >> ~/.ssh/known_hosts
+        git remote add dokku dokku@<YOUR_DROPLET_IP>:todo-list-app
         git push dokku main
+      env:
+        DOKKU_SSH_PRIVATE_KEY: ${{ secrets.DOKKU_SSH_PRIVATE_KEY }}
