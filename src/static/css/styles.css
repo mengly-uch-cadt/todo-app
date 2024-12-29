@@ -17,7 +17,7 @@ body {
 .item:hover {
     box-shadow: 0 0 1em #aaa;
 }
-
+  
 .item.completed {
     text-decoration: line-through;
 }
@@ -36,42 +36,4 @@ body {
 
 button:focus {
     border: 1px solid #333;
-}
-
-
-/* Global background for the whole page */
-body {
-    background-color: #f0f8ff; /* Light background color */
-    background-image: url('path/to/your-image.jpg'); /* Optional: add an image */
-    background-size: cover;
-    background-position: center;
-    font-family: Arial, sans-serif; /* Optional font family */
-    margin: 0;
-    padding: 0;
-    min-height: 100vh;
-}
-
-/* Style for the TodoListCard */
-.todo-list-card {
-    background-color: #ffffff; /* White background for the card */
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-/* Style for individual items in the list */
-.item {
-    background-color: #ffffff; /* White background for each item */
-    padding: 10px;
-    border-radius: 5px;
-    margin-bottom: 10px;
-}
-
-.item.completed {
-    background-color: #d3ffd3; /* Light green background for completed items */
-}
-
-/* Optional: Styling for the buttons and other components */
-button {
-    font-size: 14px;
 }
