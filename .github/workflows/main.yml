@@ -3,20 +3,24 @@ name: Deploy to Dokku
 on:
   push:
     branches:
-      - main
+      - main  # Trigger the pipeline when pushing to the main branch
 
 jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+  steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
 
-      - name: Setup Dokku
-        env:
-          DOKKU_HOST: ${{ secrets.DOKKU_HOST }}
-          DOKKU_KEY: ${{ secrets.DOKKU_KEY }}
-        run: |
-          echo "${{ secrets.DOKKU_KEY }}" > dokku_key
-          chmod 600 dokku_key
-          ssh -o StrictHostKeyChecking=no -i dokku_key dokku@$DOKKU_HOST git:from-archive master
+    - name: Setup Dokku and Deploy
+      env:
+        DOKKU_HOST: ${{ secrets.DOKKU_HOST }}  # Your DigitalOcean server IP
+        DOKKU_KEY: ${{ secrets.DOKKU_KEY }}    # Your private SSH key
+      run: |
+        # Save the private SSH key into a file
+        echo "${{ secrets.DOKKU_KEY }}" > dokku_key
+        chmod 600 dokku_key
+        
+        # Add the server to known_hosts (avoid SSH verification prompt)
+        ssh-keyscan -H $DOKKU_HOST >> ~/.ssh/known_hosts
+
+        # Deploy the app to Dokku using the Git from archive
+        ssh -o StrictHostKeyChecking=no -i dokku_key dokku@$DOKKU_HOST git:from-archive main
