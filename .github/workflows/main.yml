@@ -15,7 +15,7 @@ jobs:
       - name: Deploy to Dokku
         env:
           DOKKU_HOST: ${{ secrets.DOKKU_HOST }}
-          DOKKU_APP: your_app_name
+          DOKKU_APP: todo-list-app
           DOKKU_KEY: ${{ secrets.DOKKU_KEY }}
         run: |
           echo "$DOKKU_KEY" > dokku_key
