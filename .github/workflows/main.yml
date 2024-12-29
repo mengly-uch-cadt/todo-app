@@ -19,7 +19,7 @@ jobs:
         mkdir -p ~/.ssh
 
         # Save the SSH private key from GitHub secrets and ensure it's in the correct format
-        echo "${{ secrets.DEPLOY_KEY }}" > ~/.ssh/id_rsa
+        echo "${{ secrets.DEPLOY_KEY }}" | sed 's/\r//' > ~/.ssh/id_rsa
 
         # Set correct permissions for the private key
         chmod 600 ~/.ssh/id_rsa
@@ -28,10 +28,10 @@ jobs:
         ssh-keyscan -H 157.245.60.124 >> ~/.ssh/known_hosts
         chmod 644 ~/.ssh/known_hosts
 
-        # Start the SSH agent and add the private key
+        # Start the SSH agent and add the private key manually
         eval $(ssh-agent -s)
 
-        # Manually add the SSH key to the agent
+        # Add the private key to the agent manually
         ssh-add ~/.ssh/id_rsa
 
         # Verify that the key has been added successfully to the SSH agent
