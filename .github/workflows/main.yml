@@ -1,4 +1,4 @@
-name: Deploy to DigitalOcean
+name: Deploy to Dokku
 
 on:
   push:
@@ -10,10 +10,22 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Ensures a full clone
 
-    - name: Deploy to Dokku
-      run: |
-        git remote add dokku dokku@159.223.72.233:todo-list-app
-        git push dokku main
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DOKKU_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H 157.245.60.124 >> ~/.ssh/known_hosts
+
+      - name: Add Dokku remote
+        run: |
+          git remote add dokku dokku@157.245.60.124:todo-list-app
+
+      - name: Push to Dokku
+        run: |
+          git push dokku main -f
