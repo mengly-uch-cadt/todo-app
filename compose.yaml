@@ -25,50 +25,26 @@
 #   todo-mysql-data:
 
 
-# version: '3.8'
-
-# services:
-#   app:
-#     build: .
-#     image: my-node-app:dev
-#     command: sh -c "yarn install && yarn run dev"  # Start dev server with hot-reloading
-#     ports:
-#       - "127.0.0.1:3000:3000"  # Bind to localhost for dev mode
-#     working_dir: /app
-#     volumes:
-#       - ./:/app  # Mount source code for live changes
-#       - /app/node_modules  # Prevent node_modules conflicts
-#     environment:
-#       MYSQL_HOST: mysql
-#       MYSQL_USER: root
-#       MYSQL_PASSWORD: secret
-#       MYSQL_DB: todos
-#     depends_on:
-#       - mysql
-
-#   mysql:
-#     image: mysql:8.0
-#     volumes:
-#       - todo-mysql-data:/var/lib/mysql
-#     environment:
-#       MYSQL_ROOT_PASSWORD: secret
-#       MYSQL_DATABASE: todos
-#     ports:
-#       - "3306:3306"  # Expose MySQL port if needed for debugging
-
-# volumes:
-#   todo-mysql-data:
+version: '3.8'
 
 services:
   app:
     build: .
+    image: my-node-app:dev
+    command: sh -c "yarn install && yarn run dev"  # Start dev server with hot-reloading
     ports:
-      - "80:3000"  # Map port 3000 inside the container to port 80 on the host
+      - "127.0.0.1:3000:3000"  # Bind to localhost for dev mode
+    working_dir: /app
+    volumes:
+      - ./:/app  # Mount source code for live changes
+      - /app/node_modules  # Prevent node_modules conflicts
     environment:
       MYSQL_HOST: mysql
       MYSQL_USER: root
       MYSQL_PASSWORD: secret
       MYSQL_DB: todos
+    depends_on:
+      - mysql
 
   mysql:
     image: mysql:8.0
@@ -77,6 +53,8 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: secret
       MYSQL_DATABASE: todos
+    ports:
+      - "3306:3306"  # Expose MySQL port if needed for debugging
 
 volumes:
   todo-mysql-data:
