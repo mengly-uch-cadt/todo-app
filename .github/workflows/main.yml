@@ -1,55 +1,39 @@
-name: CI/CD to DigitalOcean with Dokku
+name: Deploy Todo List App
 
 on:
   push:
     branches:
-      - main  # Trigger the deployment when code is pushed to the main branch
+      - main
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04  # Explicitly set the runner version
 
     steps:
-    # Step 1: Checkout the code
-    - name: Checkout code
-      uses: actions/checkout@v3
+      # Step 1: Checkout the code from GitHub
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Ensure a full clone
 
-    # Step 2: Set up SSH for secure connection to the server
-    - name: Set up SSH
-      run: |
-        # Create .ssh directory if it doesn't exist
-        mkdir -p ~/.ssh
+      # Step 2: Create .ssh directory and add Dokku server SSH key to known_hosts
+      - name: Create .ssh directory and add Dokku server SSH key
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H 139.59.123.238 >> ~/.ssh/known_hosts
 
-        # Save the SSH private key from GitHub secrets into the correct file
-        echo "${{ secrets.DEPLOY_KEY }}" | sed 's/\r//' > ~/.ssh/id_rsa
+      # Step 3: Set up the SSH agent and load the SSH private key
+      - name: Set up SSH agent
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.MY_SSH_KEY }}
 
-        # Set permissions for the private key
-        chmod 600 ~/.ssh/id_rsa
+      # Step 4: Add Dokku remote if not already added
+      - name: Add Dokku remote
+        run: |
+          git remote add dokku dokku@139.59.123.238:todo-list-app || echo "Dokku remote already exists"
 
-        # Add the DigitalOcean server's SSH key to known_hosts to prevent SSH prompts
-        ssh-keyscan -H 157.245.60.124 >> ~/.ssh/known_hosts
-        chmod 644 ~/.ssh/known_hosts
-
-        # Start the SSH agent
-        eval $(ssh-agent -s)
-
-        # Add the private key to the SSH agent
-        ssh-add ~/.ssh/id_rsa
-
-        # Verify that the key is successfully loaded into the agent
-        ssh-add -l
-
-    # Step 3: Test the SSH connection to the server
-    - name: Test SSH Connection
-      run: |
-        # Test the SSH connection to the Dokku server
-        ssh -o StrictHostKeyChecking=no dokku@157.245.60.124 exit
-
-    # Step 4: Deploy to Dokku
-    - name: Deploy to Dokku
-      run: |
-        # Add Dokku as a Git remote repository
-        git remote add dokku dokku@157.245.60.124:todo-list-app
-
-        # Push the code to Dokku (this triggers the deployment)
-        git push dokku main
+      # Step 5: Deploy to Dokku
+      - name: Deploy to Dokku
+        run: |
+          git push dokku main -f  # Push the full history to Dokku
