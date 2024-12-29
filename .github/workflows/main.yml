@@ -15,8 +15,8 @@ jobs:
 
     - name: Deploy to Dokku
       run: |
-        ssh-keyscan -H <YOUR_DROPLET_IP> >> ~/.ssh/known_hosts
-        git remote add dokku dokku@<YOUR_DROPLET_IP>:todo-list-app
+        ssh-keyscan -H 157.245.60.124 >> ~/.ssh/known_hosts
+        git remote add dokku dokku@157.245.60.124:todo-list-app
         git push dokku main
       env:
         DOKKU_SSH_PRIVATE_KEY: ${{ secrets.DOKKU_SSH_PRIVATE_KEY }}
