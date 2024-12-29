@@ -22,7 +22,7 @@ jobs:
 
       - name: Add Dokku remote
         run: |
-          git remote add dokku dokku@${{ secrets.DOKKU_HOST }}:${{ secrets.DOKKU_APP }}
+          git remote add dokku dokku@157.245.60.124:todo-list-app
 
       - name: Push to Dokku
         run: |
