@@ -1,0 +1,1 @@
+dokku buildpacks:set your-app-name https://github.com/heroku/heroku-buildpack-nodejs.git
