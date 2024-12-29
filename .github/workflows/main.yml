@@ -12,12 +12,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Deploy to Dokku
+      - name: Setup Dokku
         env:
           DOKKU_HOST: ${{ secrets.DOKKU_HOST }}
-          DOKKU_APP: todo-list-app
           DOKKU_KEY: ${{ secrets.DOKKU_KEY }}
         run: |
-          echo "$DOKKU_KEY" > dokku_key
+          echo "${{ secrets.DOKKU_KEY }}" > dokku_key
           chmod 600 dokku_key
-          ssh -i dokku_key -o StrictHostKeyChecking=no dokku@$DOKKU_HOST git:from-archive master
+          ssh -o StrictHostKeyChecking=no -i dokku_key dokku@$DOKKU_HOST git:from-archive master
