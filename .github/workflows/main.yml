@@ -22,8 +22,6 @@ jobs:
         chmod 644 ~/.ssh/known_hosts
 
     - name: Deploy to Dokku
-      env:
-        SSH_AUTH_SOCK: /tmp/ssh_agent.sock
       run: |
         eval "$(ssh-agent -s)"
         ssh-add ~/.ssh/id_rsa
