@@ -1,54 +1,54 @@
-name: CI/CD to DigitalOcean with Dokku
+name: Node.js CI/CD
 
 on:
   push:
     branches:
       - main  # Trigger on push to the main branch
+  pull_request:
+    branches:
+      - main  # Trigger on PRs to the main branch
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
 
     steps:
-    # Step 1: Checkout the code from GitHub repository
-    - name: Checkout code
-      uses: actions/checkout@v3
+      # Check out the repository
+      - name: Check out code
+        uses: actions/checkout@v2
 
-    # Step 2: Set up SSH key and known hosts
-    - name: Set up SSH
-      run: |
-        # Create .ssh directory
-        mkdir -p ~/.ssh
-        
-        # Remove any Windows line endings (if copying from Windows)
-        echo "${{ secrets.DEPLOY_KEY }}" | sed 's/\r//' > ~/.ssh/id_rsa
-        
-        # Set permissions for the private key
-        chmod 600 ~/.ssh/id_rsa
-        
-        # Add the server's SSH key to known_hosts to prevent SSH verification prompts
-        ssh-keyscan -H 157.245.60.124 >> ~/.ssh/known_hosts
-        chmod 644 ~/.ssh/known_hosts
-        
-        # Start the SSH agent
-        eval $(ssh-agent -s)
-        
-        # Add the private key to the SSH agent
-        ssh-add ~/.ssh/id_rsa
-        
-        # Verify if the key has been loaded correctly
-        ssh-add -l
+      # Set up Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'  # Specify the Node.js version to use
 
-    # Step 3: Test SSH connection to ensure it works
-    - name: Test SSH Connection
-      run: |
-        ssh -o StrictHostKeyChecking=no dokku@157.245.60.124 exit
+      # Install dependencies
+      - name: Install dependencies
+        run: npm install
 
-    # Step 4: Deploy to Dokku
-    - name: Deploy to Dokku
-      run: |
-        # Add Dokku as a Git remote
-        git remote add dokku dokku@157.245.60.124:todo-list-app
+      # Run tests
+      - name: Run tests
+        run: npm test
 
-        # Push the code to Dokku (triggering deployment)
-        git push dokku main
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build  # Only runs after the build job succeeds
+    if: github.ref == 'refs/heads/main'  # Deploy only on the main branch
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      # Set up SSH key for secure deployment
+      - name: Set up SSH key
+        run: |
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.DOKKU_SERVER_IP }} >> ~/.ssh/known_hosts
+
+      # Deploy to DigitalOcean using Dokku
+      - name: Deploy to DigitalOcean using Dokku
+        run: |
+          git remote add dokku dokku@${{ secrets.DOKKU_SERVER_IP }}:your-app-name
+          git push dokku main
