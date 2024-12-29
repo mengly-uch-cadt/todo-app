@@ -15,17 +15,38 @@ jobs:
 
     - name: Set up SSH
       run: |
+        # Create the .ssh directory
         mkdir -p ~/.ssh
+
+        # Save the SSH private key from GitHub secrets
         echo "${{ secrets.DEPLOY_KEY }}" > ~/.ssh/id_rsa
+
+        # Set proper permissions for the private key
         chmod 600 ~/.ssh/id_rsa
-        ssh-keyscan -H 157.245.60.124 > ~/.ssh/known_hosts
+
+        # Add the server's SSH key to known hosts
+        ssh-keyscan -H 157.245.60.124 >> ~/.ssh/known_hosts
         chmod 644 ~/.ssh/known_hosts
+
+        # Start the SSH agent and add the private key
+        eval $(ssh-agent -s)
+        ssh-add ~/.ssh/id_rsa
+
+    - name: Debug SSH Key
+      run: |
+        # Output the contents of the private key to verify it is correctly loaded (for debugging)
+        cat ~/.ssh/id_rsa
+        # List the keys currently loaded in the SSH agent
+        ssh-add -l
 
     - name: Test SSH Connection
       run: |
+        # Test the SSH connection to the server
         ssh -o StrictHostKeyChecking=no dokku@157.245.60.124 exit
 
     - name: Deploy to Dokku
       run: |
+        # Add Dokku as a git remote
         git remote add dokku dokku@157.245.60.124:todo-list-app
+        # Push the code to Dokku
         git push dokku main
